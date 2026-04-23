@@ -1,0 +1,18 @@
+.env
+.claude_session_id
+
+# Certificates
+certs/*.crt
+certs/*.key
+certs/*.pem
+
+# Database
+data/
+
+# Python
+__pycache__/
+*.pyc
+
+# Node
+frontend/node_modules/
+frontend/dist/
