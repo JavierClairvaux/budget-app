@@ -81,7 +81,7 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard label="Income" value={summary.total_income} color="text-green-600 dark:text-green-400" />
         <StatCard label="Expenses" value={summary.total_expenses} color="text-red-500 dark:text-red-400" />
         <StatCard
@@ -91,7 +91,7 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
           <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Spending by Category</p>
           {summary.by_category.length > 0 ? (

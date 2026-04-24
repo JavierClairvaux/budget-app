@@ -83,7 +83,7 @@ export default function Budgets() {
         </form>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {budgets.length === 0 && (
           <p className="text-gray-400 text-sm col-span-3 text-center py-10">No budgets set for this month</p>
         )}

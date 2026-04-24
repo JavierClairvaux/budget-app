@@ -30,7 +30,9 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      <aside className="w-56 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+
+      {/* Sidebar — desktop only */}
+      <aside className="hidden md:flex w-56 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-col">
         <div className="px-5 py-5 border-b border-gray-100 dark:border-gray-700">
           <p className="font-bold text-indigo-600 dark:text-indigo-400 text-lg">Family Budget</p>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">{user?.name}</p>
@@ -71,9 +73,48 @@ export default function Layout() {
           </button>
         </div>
       </aside>
-      <main className="flex-1 p-6 overflow-auto">
-        <Outlet />
-      </main>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0">
+
+        {/* Mobile top bar */}
+        <header className="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <p className="font-bold text-indigo-600 dark:text-indigo-400">Family Budget</p>
+          <div className="flex items-center gap-2">
+            <button onClick={toggle} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+              {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
+            </button>
+            <button onClick={handleLogout} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+              <ArrowRightStartOnRectangleIcon className="w-5 h-5" />
+            </button>
+          </div>
+        </header>
+
+        <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
+          <Outlet />
+        </main>
+
+        {/* Bottom nav — mobile only */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex">
+          {navItems.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/'}
+              className={({ isActive }) =>
+                `flex-1 flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition ${
+                  isActive
+                    ? 'text-indigo-600 dark:text-indigo-400'
+                    : 'text-gray-400 dark:text-gray-500'
+                }`
+              }
+            >
+              <Icon className="w-5 h-5" />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
     </div>
   )
 }

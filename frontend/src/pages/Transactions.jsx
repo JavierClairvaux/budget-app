@@ -65,8 +65,8 @@ export default function Transactions() {
       </div>
 
       {showForm && (
-        <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 grid grid-cols-2 gap-3">
-          <div className="col-span-2">
+        <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="col-span-1 sm:col-span-2">
             <label className={labelCls}>Description</label>
             <input required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputCls} />
           </div>
@@ -92,60 +92,95 @@ export default function Transactions() {
               {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
-          <div className="col-span-2 flex justify-end gap-2">
+          <div className="col-span-1 sm:col-span-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">Cancel</button>
             <button type="submit" className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">Save</button>
           </div>
         </form>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-        {transactions.length === 0 ? (
+      {transactions.length === 0 ? (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
           <p className="text-gray-400 text-sm text-center py-10">No transactions for this month</p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
-              <tr>
-                {['Date', 'Description', 'Category', 'Who', 'Type', 'Amount', ''].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{h}</th>
+        </div>
+      ) : (
+        <>
+          {/* Table — desktop */}
+          <div className="hidden md:block bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
+                <tr>
+                  {['Date', 'Description', 'Category', 'Who', 'Type', 'Amount', ''].map((h) => (
+                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                {transactions.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{tx.date}</td>
+                    <td className="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">{tx.description}</td>
+                    <td className="px-4 py-3">
+                      {tx.category ? (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: tx.category.color }} />
+                          {tx.category.name}
+                        </span>
+                      ) : <span className="text-gray-300 dark:text-gray-600">—</span>}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{tx.user.name}</td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${tx.type === 'income' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+                        {tx.type}
+                      </span>
+                    </td>
+                    <td className={`px-4 py-3 font-semibold ${tx.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                      {tx.type === 'income' ? '+' : '-'}${tx.amount.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {(tx.user.id === user?.id || user?.is_admin) && (
+                        <button onClick={() => remove(tx.id)} className="text-gray-300 dark:text-gray-600 hover:text-red-500 transition">
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-              {transactions.map((tx) => (
-                <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{tx.date}</td>
-                  <td className="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">{tx.description}</td>
-                  <td className="px-4 py-3">
-                    {tx.category ? (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: tx.category.color }} />
+              </tbody>
+            </table>
+          </div>
+
+          {/* Cards — mobile */}
+          <div className="md:hidden space-y-2">
+            {transactions.map((tx) => (
+              <div key={tx.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm px-4 py-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-800 dark:text-gray-200 text-sm truncate">{tx.description}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{tx.date} · {tx.user.name}</p>
+                    {tx.category && (
+                      <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tx.category.color }} />
                         {tx.category.name}
                       </span>
-                    ) : <span className="text-gray-300 dark:text-gray-600">—</span>}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{tx.user.name}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${tx.type === 'income' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
-                      {tx.type}
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`font-semibold text-sm ${tx.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                      {tx.type === 'income' ? '+' : '-'}${tx.amount.toFixed(2)}
                     </span>
-                  </td>
-                  <td className={`px-4 py-3 font-semibold ${tx.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-gray-800 dark:text-gray-200'}`}>
-                    {tx.type === 'income' ? '+' : '-'}${tx.amount.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3">
                     {(tx.user.id === user?.id || user?.is_admin) && (
                       <button onClick={() => remove(tx.id)} className="text-gray-300 dark:text-gray-600 hover:text-red-500 transition">
                         <TrashIcon className="w-4 h-4" />
                       </button>
                     )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
