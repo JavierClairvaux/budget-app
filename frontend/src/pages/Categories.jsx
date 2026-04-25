@@ -31,8 +31,8 @@ export default function Categories() {
       <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Categories</h2>
 
       {user?.is_admin && (
-        <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 flex gap-3 items-end">
-          <div className="flex-1">
+        <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 space-y-3">
+          <div>
             <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Name</label>
             <input
               required value={name} onChange={(e) => setName(e.target.value)}
@@ -40,22 +40,24 @@ export default function Categories() {
               className="w-full border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Color</label>
-            <div className="flex gap-1.5">
-              {COLORS.map((c) => (
-                <button
-                  key={c} type="button"
-                  onClick={() => setColor(c)}
-                  className={`w-6 h-6 rounded-full transition ${color === c ? 'ring-2 ring-offset-1 ring-gray-400 dark:ring-offset-gray-800' : ''}`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Color</label>
+              <div className="flex gap-1.5 flex-wrap">
+                {COLORS.map((c) => (
+                  <button
+                    key={c} type="button"
+                    onClick={() => setColor(c)}
+                    className={`w-6 h-6 rounded-full transition ${color === c ? 'ring-2 ring-offset-1 ring-gray-400 dark:ring-offset-gray-800' : ''}`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
             </div>
+            <button type="submit" className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition shrink-0">
+              <PlusIcon className="w-4 h-4" /> Add
+            </button>
           </div>
-          <button type="submit" className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition">
-            <PlusIcon className="w-4 h-4" /> Add
-          </button>
         </form>
       )}
 
