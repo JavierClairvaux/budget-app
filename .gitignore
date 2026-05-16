@@ -1,5 +1,6 @@
 .env
 .claude_session_id
+.claude_session
 
 # Certificates
 certs/*.crt
@@ -16,3 +17,5 @@ __pycache__/
 # Node
 frontend/node_modules/
 frontend/dist/
+
+*.txt
