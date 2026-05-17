@@ -8,15 +8,19 @@ services:
       - ./data:/data
     ports:
       - "8000:8000"
+    networks:
+      - budget
 
   frontend:
     build: ./frontend
     restart: unless-stopped
-    ports:
-      - "3000:80"
-      - "3443:443"
-    volumes:
-      - ./certs:/etc/nginx/certs:ro
     depends_on:
       - backend
+    networks:
+      - budget
+
+networks:
+  budget:
+    external: true
+    name: budget
 
