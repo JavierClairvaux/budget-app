@@ -6,6 +6,7 @@ import {
   ArrowsRightLeftIcon,
   TagIcon,
   ChartBarIcon,
+  BanknotesIcon,
   ArrowRightStartOnRectangleIcon,
   SunIcon,
   MoonIcon,
@@ -15,6 +16,7 @@ const navItems = [
   { to: '/', label: 'Dashboard', icon: HomeIcon },
   { to: '/transactions', label: 'Transactions', icon: ArrowsRightLeftIcon },
   { to: '/budgets', label: 'Budgets', icon: ChartBarIcon },
+  { to: '/income-goals', label: 'Income', icon: BanknotesIcon },
   { to: '/categories', label: 'Categories', icon: TagIcon },
 ]
 

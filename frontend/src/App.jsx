@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
 import Categories from './pages/Categories'
 import Budgets from './pages/Budgets'
+import IncomeGoals from './pages/IncomeGoals'
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
@@ -25,6 +26,7 @@ export default function App() {
               <Route index element={<Dashboard />} />
               <Route path="transactions" element={<Transactions />} />
               <Route path="budgets" element={<Budgets />} />
+              <Route path="income-goals" element={<IncomeGoals />} />
               <Route path="categories" element={<Categories />} />
             </Route>
           </Routes>

@@ -80,7 +80,7 @@ export default function Transactions() {
           </div>
           <div>
             <label className={labelCls}>Type</label>
-            <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className={inputCls}>
+            <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value, category_id: '' })} className={inputCls}>
               <option value="expense">Expense</option>
               <option value="income">Income</option>
             </select>
@@ -89,7 +89,7 @@ export default function Transactions() {
             <label className={labelCls}>Category</label>
             <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })} className={inputCls}>
               <option value="">None</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {categories.filter((c) => (c.type || 'expense') === form.type).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div className="col-span-1 sm:col-span-2 flex justify-end gap-2">

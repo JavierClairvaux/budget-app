@@ -9,7 +9,7 @@ import {
   LinearScale,
   BarElement,
 } from 'chart.js'
-import { PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Link } from 'react-router-dom'
 import api from '../api/client'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
@@ -33,27 +33,16 @@ function StatCard({ label, value, color }) {
 export default function Dashboard() {
   const [summary, setSummary] = useState(null)
   const [budgets, setBudgets] = useState([])
-  const [incomeGoal, setIncomeGoal] = useState(null)
-  const [editingGoal, setEditingGoal] = useState(null) // { amount, applyForward } | null
+  const [incomeBudgets, setIncomeBudgets] = useState([])
   const [month, setMonth] = useState(currentMonth())
   const { dark } = useTheme()
   const { user } = useAuth()
 
   useEffect(() => {
     api.get(`/summary?month=${month}`).then((r) => setSummary(r.data))
-    api.get(`/budgets?month=${month}`).then((r) => setBudgets(r.data))
-    api.get(`/income-goals?month=${month}`).then((r) => setIncomeGoal(r.data))
+    api.get(`/budgets?month=${month}&type=expense`).then((r) => setBudgets(r.data))
+    api.get(`/budgets?month=${month}&type=income`).then((r) => setIncomeBudgets(r.data))
   }, [month])
-
-  const saveIncomeGoal = async () => {
-    const { data } = await api.put('/income-goals', {
-      amount: parseFloat(editingGoal.amount),
-      month,
-      apply_forward: editingGoal.applyForward,
-    })
-    setIncomeGoal(data)
-    setEditingGoal(null)
-  }
 
   if (!summary) return <p className="text-gray-400">Loading…</p>
 
@@ -101,10 +90,19 @@ export default function Dashboard() {
     ],
   }
 
-  const plannedIncome = incomeGoal?.amount || 0
+  const plannedIncome = incomeBudgets.reduce((sum, b) => sum + b.amount, 0)
   const actualIncome = summary.total_income
   const underIncome = plannedIncome > 0 && actualIncome < plannedIncome
   const incomeRatio = plannedIncome > 0 ? actualIncome / plannedIncome : 1
+
+  const incomeDonutData = {
+    labels: (summary.by_income_category || []).map((c) => c.name),
+    datasets: [{
+      data: (summary.by_income_category || []).map((c) => c.total),
+      backgroundColor: (summary.by_income_category || []).map((c) => c.color),
+      borderWidth: 0,
+    }],
+  }
 
   const incomePlannedVsActual = {
     labels: ['This Month'],
@@ -219,46 +217,13 @@ export default function Dashboard() {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            {plannedIncome > 0 && !editingGoal && (
-              <p className={`text-xs font-medium ${underIncome ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
-                ${actualIncome.toFixed(2)} / ${plannedIncome.toFixed(2)}
-                {' '}({actualIncome >= plannedIncome ? '+' : '-'}${Math.abs(actualIncome - plannedIncome).toFixed(2)})
-              </p>
-            )}
-            {user?.is_admin && !editingGoal && (
-              <button
-                onClick={() => setEditingGoal({ amount: String(plannedIncome || ''), applyForward: true })}
-                className="text-gray-300 dark:text-gray-600 hover:text-indigo-500 transition"
-              >
-                <PencilIcon className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          {plannedIncome > 0 && (
+            <p className={`text-xs font-medium ${underIncome ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
+              ${actualIncome.toFixed(2)} / ${plannedIncome.toFixed(2)}
+              {' '}({actualIncome >= plannedIncome ? '+' : '-'}${Math.abs(actualIncome - plannedIncome).toFixed(2)})
+            </p>
+          )}
         </div>
-
-        {editingGoal && (
-          <div className="mb-4 flex items-center gap-2 flex-wrap">
-            <input
-              type="number" min="0" step="0.01" autoFocus
-              placeholder="Income goal"
-              value={editingGoal.amount}
-              onChange={(e) => setEditingGoal({ ...editingGoal, amount: e.target.value })}
-              className="border border-indigo-400 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <label className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={editingGoal.applyForward}
-                onChange={(e) => setEditingGoal({ ...editingGoal, applyForward: e.target.checked })}
-                className="accent-indigo-600 w-3.5 h-3.5"
-              />
-              Apply to future months
-            </label>
-            <button onClick={saveIncomeGoal} className="text-green-500 hover:text-green-600 transition"><CheckIcon className="w-4 h-4" /></button>
-            <button onClick={() => setEditingGoal(null)} className="text-gray-400 hover:text-gray-600 transition"><XMarkIcon className="w-4 h-4" /></button>
-          </div>
-        )}
 
         {plannedIncome > 0 ? (
           <Bar
@@ -277,7 +242,9 @@ export default function Dashboard() {
           />
         ) : (
           <p className="text-gray-400 text-sm text-center py-8">
-            {user?.is_admin ? 'Set an income goal to track progress' : 'No income goal set'}
+            {user?.is_admin ? (
+              <>No income goals yet — <Link to="/income-goals" className="text-green-600 dark:text-green-400 hover:underline">set per-category goals</Link></>
+            ) : 'No income goals set'}
           </p>
         )}
       </div>
@@ -292,6 +259,14 @@ export default function Dashboard() {
           )}
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Income by Category</p>
+          {(summary.by_income_category || []).length > 0 ? (
+            <Doughnut data={incomeDonutData} options={{ plugins: { legend: { position: 'bottom', labels: { color: tickColor } } } }} />
+          ) : (
+            <p className="text-gray-400 text-sm text-center py-8">No income yet</p>
+          )}
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 md:col-span-2">
           <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Spending by Member</p>
           {summary.by_user.length > 0 ? (
             <Bar data={barData} options={{ ...chartOptions, plugins: { legend: { display: false } } }} />

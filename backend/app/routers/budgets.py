@@ -4,6 +4,7 @@ from sqlalchemy import extract
 from typing import List, Optional
 from app.database import get_db
 from app.models.budget import Budget
+from app.models.category import Category
 from app.models.transaction import Transaction, TransactionType
 from app.models.user import User
 from app.schemas.budget import BudgetCreate, BudgetUpdate, BudgetOut
@@ -16,11 +17,16 @@ def _attach_spent(budgets: list[Budget], db: Session) -> list[dict]:
     result = []
     for b in budgets:
         year, month = b.month.split("-")
+        tx_type = (
+            TransactionType.income
+            if b.category and b.category.type == "income"
+            else TransactionType.expense
+        )
         spent = (
             db.query(Transaction)
             .filter(
                 Transaction.category_id == b.category_id,
-                Transaction.type == TransactionType.expense,
+                Transaction.type == tx_type,
                 extract("year", Transaction.date) == int(year),
                 extract("month", Transaction.date) == int(month),
             )
@@ -56,6 +62,7 @@ def _auto_copy_from_latest(month: str, db: Session):
 @router.get("", response_model=List[BudgetOut])
 def list_budgets(
     month: Optional[str] = Query(None),
+    type: Optional[str] = Query(None, description="Filter by category type: 'expense' or 'income'"),
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
@@ -64,6 +71,8 @@ def list_budgets(
     q = db.query(Budget)
     if month:
         q = q.filter(Budget.month == month)
+    if type:
+        q = q.join(Category, Budget.category_id == Category.id).filter(Category.type == type)
     return _attach_spent(q.all(), db)
 
 

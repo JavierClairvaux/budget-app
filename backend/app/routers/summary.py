@@ -46,6 +46,18 @@ def get_summary(
         )
     by_category = by_category.group_by(Category.id).all()
 
+    by_income_category = (
+        db.query(Category.name, Category.color, func.sum(Transaction.amount).label("total"))
+        .join(Transaction, Transaction.category_id == Category.id)
+        .filter(Transaction.type == TransactionType.income)
+    )
+    if month:
+        by_income_category = by_income_category.filter(
+            extract("year", Transaction.date) == int(year),
+            extract("month", Transaction.date) == int(m),
+        )
+    by_income_category = by_income_category.group_by(Category.id).all()
+
     by_user = (
         db.query(User.name, func.sum(Transaction.amount).label("total"))
         .join(Transaction, Transaction.user_id == User.id)
@@ -63,5 +75,6 @@ def get_summary(
         "total_expenses": total_expenses,
         "balance": total_income - total_expenses,
         "by_category": [{"name": r[0], "color": r[1], "total": r[2]} for r in by_category],
+        "by_income_category": [{"name": r[0], "color": r[1], "total": r[2]} for r in by_income_category],
         "by_user": [{"name": r[0], "total": r[1]} for r in by_user],
     }

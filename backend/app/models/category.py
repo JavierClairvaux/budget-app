@@ -9,6 +9,7 @@ class Category(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
     color = Column(String, default="#6366f1")
+    type = Column(String, nullable=False, default="expense")  # "expense" | "income"
 
     transactions = relationship("Transaction", back_populates="category")
     budgets = relationship("Budget", back_populates="category")
