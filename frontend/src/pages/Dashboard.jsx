@@ -40,8 +40,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     api.get(`/summary?month=${month}`).then((r) => setSummary(r.data))
-    api.get(`/budgets?month=${month}&type=expense`).then((r) => setBudgets(r.data))
-    api.get(`/budgets?month=${month}&type=income`).then((r) => setIncomeBudgets(r.data))
+    api.get(`/budgets?month=${month}`).then((r) => {
+      setBudgets(r.data.filter((b) => (b.category?.type || 'expense') === 'expense'))
+      setIncomeBudgets(r.data.filter((b) => b.category?.type === 'income'))
+    })
   }, [month])
 
   if (!summary) return <p className="text-gray-400">Loading…</p>

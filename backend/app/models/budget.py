@@ -1,10 +1,11 @@
-from sqlalchemy import Column, Integer, Float, ForeignKey, String
+from sqlalchemy import Column, Integer, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database import Base
 
 
 class Budget(Base):
     __tablename__ = "budgets"
+    __table_args__ = (UniqueConstraint("category_id", "month", name="uq_budget_category_month"),)
 
     id = Column(Integer, primary_key=True, index=True)
     amount = Column(Float, nullable=False)

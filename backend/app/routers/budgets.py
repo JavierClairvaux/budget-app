@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import extract
+from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 from app.database import get_db
 from app.models.budget import Budget
@@ -38,7 +39,12 @@ def _attach_spent(budgets: list[Budget], db: Session) -> list[dict]:
 
 
 def _auto_copy_from_latest(month: str, db: Session):
-    """If no budgets exist for `month`, copy from the most recent month that has budgets."""
+    """If no budgets exist for `month`, copy from the most recent month that has budgets.
+
+    Safe against concurrent requests: the unique index on (category_id, month) will
+    reject any duplicate insert. If a racing request already populated the month,
+    IntegrityError is caught and we roll back.
+    """
     existing = db.query(Budget).filter(Budget.month == month).first()
     if existing:
         return
@@ -56,7 +62,10 @@ def _auto_copy_from_latest(month: str, db: Session):
     source_budgets = db.query(Budget).filter(Budget.month == latest_month).all()
     for b in source_budgets:
         db.add(Budget(amount=b.amount, month=month, category_id=b.category_id))
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
 
 
 @router.get("", response_model=List[BudgetOut])
@@ -86,7 +95,14 @@ def create_budget(
         raise HTTPException(status_code=403, detail="Admin only")
     budget = Budget(**payload.model_dump())
     db.add(budget)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="A budget for this category and month already exists",
+        )
     db.refresh(budget)
     return _attach_spent([budget], db)[0]
 

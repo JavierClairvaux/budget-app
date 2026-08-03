@@ -16,6 +16,20 @@ with engine.connect() as conn:
     conn.execute(text("DROP TABLE IF EXISTS income_goals"))
     conn.commit()
 
+    # Dedupe budgets and enforce uniqueness on (category_id, month)
+    existing_indexes = [r[1] for r in conn.execute(text("PRAGMA index_list(budgets)")).fetchall()]
+    if "uq_budget_category_month" not in existing_indexes:
+        conn.execute(text("""
+            DELETE FROM budgets
+            WHERE id NOT IN (
+                SELECT MIN(id) FROM budgets GROUP BY category_id, month
+            )
+        """))
+        conn.execute(text(
+            "CREATE UNIQUE INDEX uq_budget_category_month ON budgets(category_id, month)"
+        ))
+        conn.commit()
+
 app = FastAPI(title="Family Budget App")
 
 app.add_middleware(

@@ -18,9 +18,13 @@ services:
       - backend
     networks:
       - budget
+      - caddy
 
 networks:
   budget:
     external: true
     name: budget
+  caddy:
+    external: true
+    name: caddy
 
